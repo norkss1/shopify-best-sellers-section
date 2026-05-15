@@ -1,0 +1,228 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+{{ 'section-best-sellers.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'section-best-sellers.js' | asset_url }}" defer></script>
+
+<section class="best-sellers" id="best-sellers-{{ section.id }}" data-section-id="{{ section.id }}">
+  <div class="best-sellers__container">
+
+    {%- if section.blocks.size > 0 -%}
+      <div class="best-sellers__body">
+
+        <div class="best-sellers__left">
+          <div class="best-sellers__header">
+            {%- if section.settings.section_label != blank -%}
+              <p class="best-sellers__label">{{ section.settings.section_label }}</p>
+            {%- endif -%}
+            {%- if section.settings.title != blank -%}
+              <h2 class="best-sellers__title">{{ section.settings.title }}</h2>
+            {%- endif -%}
+          </div>
+
+          <div class="best-sellers__tabs" role="tablist" aria-label="{{ section.settings.title | escape }}">
+            {%- for block in section.blocks -%}
+              {%- assign tab_title = block.settings.collection_title -%}
+              {%- if tab_title == blank -%}
+                {%- assign tab_title = block.settings.collection.title -%}
+              {%- endif -%}
+              {%- if tab_title == blank -%}
+                {%- assign tab_title = 'Collection ' | append: forloop.index -%}
+              {%- endif -%}
+              <button
+                class="best-sellers__tab{%- if forloop.first %} best-sellers__tab--active{%- endif -%}"
+                role="tab"
+                aria-selected="{%- if forloop.first -%}true{%- else -%}false{%- endif -%}"
+                aria-controls="best-sellers-panel-{{ block.id }}"
+                id="best-sellers-tab-{{ block.id }}"
+                data-tab-id="{{ block.id }}"
+                {{ block.shopify_attributes }}
+              >
+                <span class="best-sellers__tab-text">{{- tab_title -}}</span>
+                <svg class="best-sellers__tab-arrow" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                  <polyline points="12 5 19 12 12 19"/>
+                </svg>
+              </button>
+            {%- endfor -%}
+          </div>
+        </div>
+
+        <div class="best-sellers__panels">
+          {%- for block in section.blocks -%}
+            {%- assign product = block.settings.product -%}
+            {%- if product == blank -%}
+              {%- assign product = block.settings.collection.products.first -%}
+            {%- endif -%}
+            {%- assign variant = product.selected_or_first_available_variant -%}
+
+            <div
+              id="best-sellers-panel-{{ block.id }}"
+              class="best-sellers__panel"
+              role="tabpanel"
+              aria-labelledby="best-sellers-tab-{{ block.id }}"
+              {%- unless forloop.first %} hidden{%- endunless -%}
+            >
+              {%- if product != blank -%}
+                <div class="best-sellers__media">
+
+                  {%- if product.featured_image -%}
+                    <a class="best-sellers__image-link" href="{{ product.url }}">
+                      <picture>
+                        <source
+                          media="(max-width: 749px)"
+                          srcset="{{ product.featured_image | image_url: width: 343 }} 1x, {{ product.featured_image | image_url: width: 686 }} 2x"
+                        >
+                        <img
+                          class="best-sellers__image"
+                          src="{{ product.featured_image | image_url: width: 600 }}"
+                          srcset="{{ product.featured_image | image_url: width: 600 }} 1x, {{ product.featured_image | image_url: width: 1200 }} 2x"
+                          alt="{{ product.featured_image.alt | escape }}"
+                          {%- if forloop.first %}
+                          loading="eager"
+                          fetchpriority="high"
+                          {%- else %}
+                          loading="lazy"
+                          {%- endif %}
+                          width="600"
+                          height="600"
+                        >
+                      </picture>
+                    </a>
+                  {%- else -%}
+                    {{ 'product-1' | placeholder_svg_tag: 'best-sellers__placeholder' }}
+                  {%- endif -%}
+
+                  {%- if product.tags.size > 0 -%}
+                    <div class="best-sellers__tags">
+                      {%- for tag in product.tags limit: 3 -%}
+                        <span class="best-sellers__tag{%- if tag == 'Sale' %} best-sellers__tag--sale{%- endif -%}">
+                          {{- tag -}}
+                        </span>
+                      {%- endfor -%}
+                    </div>
+                  {%- endif -%}
+
+                  <div class="best-sellers__actions">
+                    <button
+                      class="best-sellers__action best-sellers__action--wishlist"
+                      aria-label="Add to wishlist"
+                      data-product-name="{{ product.title | escape }}"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                      </svg>
+                    </button>
+
+                    <button
+                      class="best-sellers__action best-sellers__action--cart{%- if product.available == false %} best-sellers__action--disabled{%- endif -%}"
+                      aria-label="Add to cart"
+                      data-variant-id="{{ variant.id }}"
+                      {%- if product.available == false %} disabled aria-disabled="true"{%- endif -%}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div class="best-sellers__card-info">
+                    <a class="best-sellers__name" href="{{ product.url }}">{{ product.title }}</a>
+                    <div class="best-sellers__price">
+                      <span class="best-sellers__price-current">{{ product.price | money }}</span>
+                      {%- if product.compare_at_price > 0 -%}
+                        <span class="best-sellers__price-compare">{{ product.compare_at_price | money }}</span>
+                      {%- endif -%}
+                    </div>
+                  </div>
+
+                </div>
+              {%- endif -%}
+            </div>
+          {%- endfor -%}
+        </div>
+
+      </div>
+    {%- endif -%}
+
+  </div>
+</section>
+
+<div
+  class="best-sellers__overlay"
+  id="best-sellers-overlay-{{ section.id }}"
+  aria-hidden="true"
+></div>
+
+<div
+  class="best-sellers__popup"
+  id="best-sellers-popup-{{ section.id }}"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="best-sellers-popup-message-{{ section.id }}"
+  aria-hidden="true"
+>
+  <button
+    class="best-sellers__popup-close"
+    id="best-sellers-popup-close-{{ section.id }}"
+    aria-label="Close"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false">
+      <line x1="18" y1="6" x2="6" y2="18"/>
+      <line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>
+  </button>
+  <p class="best-sellers__popup-message" id="best-sellers-popup-message-{{ section.id }}"></p>
+</div>
+
+{% schema %}
+{
+  "name": "Best Sellers",
+  "settings": [
+    {
+      "type": "text",
+      "id": "section_label",
+      "label": "Section label",
+      "default": "Best sellers"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "Trending Products"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "collection",
+      "name": "Collection tab",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection"
+        },
+        {
+          "type": "text",
+          "id": "collection_title",
+          "label": "Collection title",
+          "info": "Overrides the collection name in the tab"
+        },
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Product",
+          "info": "If set, replaces the first product from the collection"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 3,
+  "presets": [
+    {
+      "name": "Best Sellers"
+    }
+  ]
+}
+{% endschema %}

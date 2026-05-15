@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "scripts": {
+    "sync": "node sync.js",
+    "start": "cd theme && shopify theme dev --store=roman-dev-store-gk9ybyau.myshopify.com",
+    "build": "npm run sync && cd theme && shopify theme push --store=roman-dev-store-gk9ybyau.myshopify.com --theme=146840092732",
+    "pull": "cd theme && shopify theme pull --store=roman-dev-store-gk9ybyau.myshopify.com --theme=146840092732"
+  }
+}
